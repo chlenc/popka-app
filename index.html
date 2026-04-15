@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POPKA — Slap your MacBook, it moans back</title>
+<meta name="description" content="Popka detects slaps on your MacBook via the accelerometer and plays hilarious audio responses. 4 sound modes. Free and open source.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍑</text></svg>">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: #1A1A2E;
+    color: #F5E6D3;
+    font-family: 'Press Start 2P', monospace;
+    line-height: 2;
+    overflow-x: hidden;
+  }
+  a { color: #E07A42; text-decoration: none; }
+  a:hover { text-shadow: 0 0 10px rgba(224,122,66,0.5); }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    background: rgba(26,26,46,0.95); backdrop-filter: blur(10px);
+    border-bottom: 2px solid #3A3A5C;
+    padding: 15px 30px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  nav .logo { font-size: 14px; color: #E07A42; }
+  nav .links { display: flex; gap: 25px; font-size: 8px; }
+  nav .links a { color: #9A8A7A; }
+  nav .links a:hover { color: #E07A42; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    text-align: center;
+    padding: 100px 20px 60px;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+    background: linear-gradient(transparent, #1A1A2E);
+  }
+  .hero-peach {
+    font-size: 120px;
+    animation: bounce 2s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .hero-peach:active { transform: rotate(-20deg) scale(1.2); }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+  .hero h1 {
+    font-size: 48px;
+    color: #E07A42;
+    text-shadow: 5px 5px 0 #8B3A1A, -1px -1px 0 #000;
+    letter-spacing: 10px;
+    margin: 10px 0;
+  }
+  .hero .tagline {
+    font-size: 11px;
+    color: #9A8A7A;
+    max-width: 500px;
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+  }
+  .dl-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    padding: 20px 40px;
+    background: #E07A42;
+    color: #1A1A2E;
+    border: 4px solid #C06030;
+    cursor: pointer;
+    box-shadow: 6px 6px 0 #000;
+    transition: all 0.1s;
+    display: inline-block;
+    text-decoration: none;
+  }
+  .dl-btn:hover {
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0 #000;
+    text-shadow: none;
+  }
+  .dl-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: 3px 3px 0 #000;
+  }
+  .dl-req {
+    font-size: 7px;
+    color: #6A5A4A;
+    margin-top: 15px;
+    letter-spacing: 1px;
+  }
+
+  /* SECTIONS */
+  section { padding: 80px 20px; max-width: 900px; margin: 0 auto; }
+  .section-title {
+    font-size: 18px;
+    color: #E07A42;
+    text-align: center;
+    margin-bottom: 50px;
+    text-shadow: 3px 3px 0 #8B3A1A;
+    letter-spacing: 4px;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  .feature-card {
+    background: #16213E;
+    border: 3px solid #3A3A5C;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 4px 4px 0 #000;
+    transition: all 0.2s;
+  }
+  .feature-card:hover {
+    border-color: #E07A42;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 #000;
+  }
+  .feature-emoji { font-size: 40px; display: block; margin-bottom: 15px; }
+  .feature-name {
+    font-size: 11px;
+    color: #E07A42;
+    margin-bottom: 10px;
+  }
+  .feature-desc {
+    font-size: 7px;
+    color: #8A8AAA;
+    line-height: 2.2;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+  }
+  .step {
+    text-align: center;
+    flex: 1;
+    min-width: 180px;
+    max-width: 250px;
+  }
+  .step-num {
+    font-size: 28px;
+    color: #E07A42;
+    text-shadow: 3px 3px 0 #8B3A1A;
+    margin-bottom: 10px;
+  }
+  .step-icon { font-size: 40px; margin-bottom: 10px; }
+  .step-text {
+    font-size: 9px;
+    color: #9A8A7A;
+    line-height: 2.2;
+  }
+  .step-arrow {
+    font-size: 24px;
+    color: #3A3A5C;
+    display: flex;
+    align-items: center;
+    padding-top: 30px;
+  }
+
+  /* PLATFORMS */
+  .platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+  }
+  .platform-card {
+    background: #16213E;
+    border: 3px solid #3A3A5C;
+    padding: 25px 15px;
+    text-align: center;
+    position: relative;
+    box-shadow: 4px 4px 0 #000;
+  }
+  .platform-card.available {
+    border-color: #E07A42;
+  }
+  .platform-icon { font-size: 30px; display: block; margin-bottom: 10px; }
+  .platform-name {
+    font-size: 8px;
+    color: #F5E6D3;
+    margin-bottom: 8px;
+  }
+  .badge {
+    font-size: 6px;
+    padding: 4px 8px;
+    display: inline-block;
+    letter-spacing: 1px;
+  }
+  .badge-available {
+    background: #E07A42;
+    color: #1A1A2E;
+  }
+  .badge-soon {
+    background: #3A3A5C;
+    color: #8A8AAA;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 2px solid #3A3A5C;
+    font-size: 8px;
+    color: #5A4A3A;
+  }
+  footer a { color: #6A5A4A; }
+  footer a:hover { color: #E07A42; }
+
+  /* PIXEL PARTICLES */
+  .particle {
+    position: fixed;
+    width: 4px; height: 4px;
+    background: #E07A42;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 28px; letter-spacing: 5px; }
+    .hero-peach { font-size: 80px; }
+    .hero .tagline { font-size: 8px; }
+    .features-grid { grid-template-columns: 1fr; }
+    .platforms-grid { grid-template-columns: 1fr 1fr; }
+    .steps { flex-direction: column; align-items: center; }
+    .step-arrow { display: none; }
+    nav .links { gap: 15px; font-size: 7px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">&#127825; POPKA</div>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#platforms">Platforms</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-peach" id="peach">&#127825;</div>
+  <h1>POPKA</h1>
+  <p class="tagline">Slap your MacBook. It moans back. That's it. That's the app.</p>
+  <a href="https://github.com/chlenc/popka-app/releases/latest" class="dl-btn">
+    &#128187; DOWNLOAD FOR MAC
+  </a>
+  <p class="dl-req">macOS 13+ (Ventura) &middot; Apple Silicon (M2+) required</p>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-title">// FOUR MODES OF CHAOS</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-emoji">&#128557;</span>
+      <div class="feature-name">PAIN MODE</div>
+      <div class="feature-desc">10 random protest clips. Your laptop screams in agony with every slap.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">&#128536;</span>
+      <div class="feature-name">SEXY MODE</div>
+      <div class="feature-desc">60 levels of escalation. The more you slap, the more intense it gets.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">&#128128;</span>
+      <div class="feature-name">HALO MODE</div>
+      <div class="feature-desc">Classic Halo death sounds. Turn your MacBook into a battlefield.</div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-emoji">&#129422;</span>
+      <div class="feature-name">LIZARD MODE</div>
+      <div class="feature-desc">Escalating lizard sounds. Weird? Yes. Hilarious? Absolutely.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-title">// HOW IT WORKS</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-icon">&#128230;</div>
+      <div class="step-text">Install the PKG.<br>One click. Done.</div>
+    </div>
+    <div class="step-arrow">&#9654;</div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-icon">&#128400;</div>
+      <div class="step-text">Open Popka.<br>Pick your mode.</div>
+    </div>
+    <div class="step-arrow">&#9654;</div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-icon">&#129340;</div>
+      <div class="step-text">Slap your MacBook.<br>Enjoy the chaos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORMS -->
+<section id="platforms">
+  <div class="section-title">// PLATFORMS</div>
+  <div class="platforms-grid">
+    <div class="platform-card available">
+      <span class="platform-icon">&#63743;</span>
+      <div class="platform-name">macOS</div>
+      <span class="badge badge-available">AVAILABLE</span>
+    </div>
+    <div class="platform-card">
+      <span class="platform-icon">&#128241;</span>
+      <div class="platform-name">iOS</div>
+      <span class="badge badge-soon">COMING SOON</span>
+    </div>
+    <div class="platform-card">
+      <span class="platform-icon">&#127987;&#65039;</span>
+      <div class="platform-name">Windows</div>
+      <span class="badge badge-soon">COMING SOON</span>
+    </div>
+    <div class="platform-card">
+      <span class="platform-icon">&#128039;</span>
+      <div class="platform-name">Linux</div>
+      <span class="badge badge-soon">COMING SOON</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p><a href="https://ventolabs.com" target="_blank">powered by ventolabs</a></p>
+  <p style="margin-top: 10px;">&copy; 2026 Popka. Slap responsibly.</p>
+</footer>
+
+<script>
+// Slap the peach
+const peach = document.getElementById('peach');
+peach.addEventListener('click', (e) => {
+  peach.style.animation = 'none';
+  peach.offsetHeight;
+  peach.style.animation = '';
+  // Pixel particles
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = e.clientX + 'px';
+    p.style.top = e.clientY + 'px';
+    document.body.appendChild(p);
+    const angle = (Math.PI * 2 * i) / 8;
+    const dist = 40 + Math.random() * 60;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    p.animate([
+      { opacity: 1, transform: 'translate(0, 0) scale(1)' },
+      { opacity: 0, transform: `translate(${dx}px, ${dy}px) scale(0)` }
+    ], { duration: 500, easing: 'ease-out' });
+    setTimeout(() => p.remove(), 500);
+  }
+});
+
+// Smooth reveal on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.style.opacity = '1';
+      e.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card, .step, .platform-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s, transform 0.5s';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
