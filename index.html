@@ -125,11 +125,16 @@
     text-align: center;
     box-shadow: 4px 4px 0 #000;
     transition: all 0.2s;
+    cursor: pointer;
   }
   .feature-card:hover {
     border-color: #E07A42;
     transform: translate(-2px, -2px);
     box-shadow: 6px 6px 0 #000;
+  }
+  .feature-card.playing {
+    border-color: #4ADE80;
+    box-shadow: 0 0 20px rgba(74,222,128,0.2), 4px 4px 0 #000;
   }
   .feature-emoji { font-size: 40px; display: block; margin-bottom: 15px; }
   .feature-name {
@@ -141,6 +146,12 @@
     font-size: 7px;
     color: #8A8AAA;
     line-height: 2.2;
+  }
+  .feature-play {
+    font-size: 7px;
+    color: #4ADE80;
+    margin-top: 10px;
+    letter-spacing: 1px;
   }
 
   /* HOW IT WORKS */
@@ -190,9 +201,7 @@
     position: relative;
     box-shadow: 4px 4px 0 #000;
   }
-  .platform-card.available {
-    border-color: #E07A42;
-  }
+  .platform-card.available { border-color: #E07A42; }
   .platform-icon { font-size: 30px; display: block; margin-bottom: 10px; }
   .platform-name {
     font-size: 8px;
@@ -205,13 +214,79 @@
     display: inline-block;
     letter-spacing: 1px;
   }
-  .badge-available {
-    background: #E07A42;
-    color: #1A1A2E;
+  .badge-available { background: #E07A42; color: #1A1A2E; }
+  .badge-soon { background: #3A3A5C; color: #8A8AAA; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    justify-content: center; align-items: center;
+    padding: 20px;
   }
-  .badge-soon {
-    background: #3A3A5C;
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #16213E;
+    border: 4px solid #E07A42;
+    box-shadow: 8px 8px 0 #000;
+    max-width: 520px;
+    width: 100%;
+    padding: 30px;
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 15px;
+    background: none; border: none; color: #9A8A7A;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px; cursor: pointer;
+  }
+  .modal-close:hover { color: #E07A42; }
+  .modal h2 {
+    font-size: 13px;
+    color: #4ADE80;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .modal .install-step {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 18px;
+    align-items: flex-start;
+  }
+  .modal .install-num {
+    font-size: 16px;
+    color: #E07A42;
+    text-shadow: 2px 2px 0 #8B3A1A;
+    min-width: 30px;
+  }
+  .modal .install-text {
+    font-size: 7px;
+    color: #C0B0A0;
+    line-height: 2.4;
+  }
+  .modal .trouble {
+    background: #1A1A2E;
+    border: 2px solid #3A3A5C;
+    padding: 15px;
+    margin-top: 20px;
+  }
+  .modal .trouble-title {
+    font-size: 8px;
+    color: #E07A42;
+    margin-bottom: 10px;
+  }
+  .modal .trouble-text {
+    font-size: 7px;
     color: #8A8AAA;
+    line-height: 2.4;
+  }
+  .modal .trouble-text b {
+    color: #F5E6D3;
+    font-weight: normal;
   }
 
   /* FOOTER */
@@ -245,6 +320,7 @@
     .steps { flex-direction: column; align-items: center; }
     .step-arrow { display: none; }
     nav .links { gap: 15px; font-size: 7px; }
+    .modal { padding: 20px; }
   }
 </style>
 </head>
@@ -264,7 +340,7 @@
   <div class="hero-peach" id="peach">&#127825;</div>
   <h1>POPKA</h1>
   <p class="tagline">Slap your MacBook. It moans back. That's it. That's the app.</p>
-  <a href="https://github.com/chlenc/popka-app/releases/latest" class="dl-btn">
+  <a href="https://github.com/chlenc/popka-app/releases/download/v1.0.0/Popka.pkg" class="dl-btn" id="dlBtn">
     &#128187; DOWNLOAD FOR MAC
   </a>
   <p class="dl-req">macOS 13+ (Ventura) &middot; Apple Silicon (M2+) required</p>
@@ -274,25 +350,29 @@
 <section id="features">
   <div class="section-title">// FOUR MODES OF CHAOS</div>
   <div class="features-grid">
-    <div class="feature-card">
+    <div class="feature-card" data-sound="audio/pain.mp3">
       <span class="feature-emoji">&#128557;</span>
       <div class="feature-name">PAIN MODE</div>
       <div class="feature-desc">10 random protest clips. Your laptop screams in agony with every slap.</div>
+      <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-sound="audio/sexy.mp3">
       <span class="feature-emoji">&#128536;</span>
       <div class="feature-name">SEXY MODE</div>
       <div class="feature-desc">60 levels of escalation. The more you slap, the more intense it gets.</div>
+      <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-sound="audio/halo.mp3">
       <span class="feature-emoji">&#128128;</span>
       <div class="feature-name">HALO MODE</div>
       <div class="feature-desc">Classic Halo death sounds. Turn your MacBook into a battlefield.</div>
+      <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card">
+    <div class="feature-card" data-sound="audio/lizard.mp3">
       <span class="feature-emoji">&#129422;</span>
       <div class="feature-name">LIZARD MODE</div>
       <div class="feature-desc">Escalating lizard sounds. Weird? Yes. Hilarious? Absolutely.</div>
+      <div class="feature-play">&#9654; click to preview</div>
     </div>
   </div>
 </section>
@@ -348,6 +428,43 @@
   </div>
 </section>
 
+<!-- INSTALL MODAL -->
+<div class="modal-overlay" id="installModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h2>&#127881; Download started!</h2>
+
+    <div class="install-step">
+      <div class="install-num">1</div>
+      <div class="install-text">Open <b>Popka.pkg</b> from your Downloads folder</div>
+    </div>
+    <div class="install-step">
+      <div class="install-num">2</div>
+      <div class="install-text">Click <b>Install</b> and enter your password</div>
+    </div>
+    <div class="install-step">
+      <div class="install-num">3</div>
+      <div class="install-text">Open <b>Popka</b> from Applications</div>
+    </div>
+    <div class="install-step">
+      <div class="install-num">4</div>
+      <div class="install-text">Slap your MacBook and enjoy &#127825;</div>
+    </div>
+
+    <div class="trouble">
+      <div class="trouble-title">&#9888;&#65039; "Popka.pkg" can't be opened?</div>
+      <div class="trouble-text">
+        macOS may block apps from unidentified developers. To fix this:<br><br>
+        1. Open <b>System Settings</b><br>
+        2. Go to <b>Privacy &amp; Security</b><br>
+        3. Scroll down to find Popka.pkg<br>
+        4. Click <b>"Open Anyway"</b><br><br>
+        Or: <b>Right-click</b> on Popka.pkg &rarr; <b>Open</b> &rarr; <b>Open</b>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <p><a href="https://ventolabs.com" target="_blank">powered by ventolabs</a></p>
@@ -355,13 +472,58 @@
 </footer>
 
 <script>
+// Download button -> show install modal
+document.getElementById('dlBtn').addEventListener('click', () => {
+  setTimeout(() => {
+    document.getElementById('installModal').classList.add('show');
+  }, 500);
+});
+function closeModal() {
+  document.getElementById('installModal').classList.remove('show');
+}
+document.getElementById('installModal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// Sound preview
+let currentAudio = null;
+let currentCard = null;
+document.querySelectorAll('.feature-card[data-sound]').forEach(card => {
+  card.addEventListener('click', () => {
+    const src = card.dataset.sound;
+    if (currentAudio && currentCard === card) {
+      currentAudio.pause();
+      currentAudio = null;
+      card.classList.remove('playing');
+      card.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
+      currentCard = null;
+      return;
+    }
+    if (currentAudio) {
+      currentAudio.pause();
+      currentCard.classList.remove('playing');
+      currentCard.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
+    }
+    currentAudio = new Audio(src);
+    currentCard = card;
+    card.classList.add('playing');
+    card.querySelector('.feature-play').innerHTML = '&#9724; playing...';
+    currentAudio.play();
+    currentAudio.onended = () => {
+      card.classList.remove('playing');
+      card.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
+      currentAudio = null;
+      currentCard = null;
+    };
+  });
+});
+
 // Slap the peach
 const peach = document.getElementById('peach');
 peach.addEventListener('click', (e) => {
   peach.style.animation = 'none';
   peach.offsetHeight;
   peach.style.animation = '';
-  // Pixel particles
   for (let i = 0; i < 8; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
@@ -380,7 +542,7 @@ peach.addEventListener('click', (e) => {
   }
 });
 
-// Smooth reveal on scroll
+// Scroll reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
@@ -389,7 +551,6 @@ const observer = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.1 });
-
 document.querySelectorAll('.feature-card, .step, .platform-card').forEach(el => {
   el.style.opacity = '0';
   el.style.transform = 'translateY(20px)';
