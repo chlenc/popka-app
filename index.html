@@ -350,25 +350,25 @@
 <section id="features">
   <div class="section-title">// FOUR MODES OF CHAOS</div>
   <div class="features-grid">
-    <div class="feature-card" data-sound="audio/pain.mp3">
+    <div class="feature-card" data-sounds="audio/pain/00_Ow.mp3,audio/pain/01_Ouch.mp3,audio/pain/02_Owwie.mp3,audio/pain/03_Hey_that_hurts.mp3,audio/pain/07_Hey.mp3">
       <span class="feature-emoji">&#128557;</span>
       <div class="feature-name">PAIN MODE</div>
       <div class="feature-desc">10 random protest clips. Your laptop screams in agony with every slap.</div>
       <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card" data-sound="audio/sexy.mp3">
+    <div class="feature-card" data-sounds="audio/sexy/00.mp3,audio/sexy/10.mp3,audio/sexy/20.mp3,audio/sexy/35.mp3,audio/sexy/50.mp3">
       <span class="feature-emoji">&#128536;</span>
       <div class="feature-name">SEXY MODE</div>
       <div class="feature-desc">60 levels of escalation. The more you slap, the more intense it gets.</div>
       <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card" data-sound="audio/halo.mp3">
+    <div class="feature-card" data-sounds="audio/halo/00.mp3,audio/halo/01.mp3,audio/halo/02.mp3,audio/halo/03.mp3,audio/halo/04.mp3">
       <span class="feature-emoji">&#128128;</span>
       <div class="feature-name">HALO MODE</div>
       <div class="feature-desc">Classic Halo death sounds. Turn your MacBook into a battlefield.</div>
       <div class="feature-play">&#9654; click to preview</div>
     </div>
-    <div class="feature-card" data-sound="audio/lizard.mp3">
+    <div class="feature-card" data-sounds="audio/lizard/00.mp3">
       <span class="feature-emoji">&#129422;</span>
       <div class="feature-name">LIZARD MODE</div>
       <div class="feature-desc">Escalating lizard sounds. Weird? Yes. Hilarious? Absolutely.</div>
@@ -485,36 +485,31 @@ document.getElementById('installModal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
 
-// Sound preview
+// Sound preview — plays random sound from mode each click
 let currentAudio = null;
 let currentCard = null;
-document.querySelectorAll('.feature-card[data-sound]').forEach(card => {
+function stopCurrent() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (currentCard) {
+    currentCard.classList.remove('playing');
+    currentCard.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
+    currentCard = null;
+  }
+}
+document.querySelectorAll('.feature-card[data-sounds]').forEach(card => {
   card.addEventListener('click', () => {
-    const src = card.dataset.sound;
-    if (currentAudio && currentCard === card) {
-      currentAudio.pause();
-      currentAudio = null;
-      card.classList.remove('playing');
-      card.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
-      currentCard = null;
-      return;
-    }
-    if (currentAudio) {
-      currentAudio.pause();
-      currentCard.classList.remove('playing');
-      currentCard.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
-    }
+    const sounds = card.dataset.sounds.split(',');
+    const src = sounds[Math.floor(Math.random() * sounds.length)];
+    stopCurrent();
     currentAudio = new Audio(src);
     currentCard = card;
     card.classList.add('playing');
     card.querySelector('.feature-play').innerHTML = '&#9724; playing...';
     currentAudio.play();
-    currentAudio.onended = () => {
-      card.classList.remove('playing');
-      card.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
-      currentAudio = null;
-      currentCard = null;
-    };
+    currentAudio.onended = () => stopCurrent();
   });
 });
 
