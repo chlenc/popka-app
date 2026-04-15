@@ -485,31 +485,57 @@ document.getElementById('installModal').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeModal();
 });
 
-// Sound preview — plays random sound from mode each click
+// Sound preview — lazy load + cache on first click per mode
 let currentAudio = null;
 let currentCard = null;
+const audioCache = {}; // { "audio/pain/00.mp3": AudioBuffer-like blob URL }
+
 function stopCurrent() {
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
-  }
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
   if (currentCard) {
     currentCard.classList.remove('playing');
     currentCard.querySelector('.feature-play').innerHTML = '&#9654; click to preview';
     currentCard = null;
   }
 }
+
+async function fetchAndCache(src) {
+  if (audioCache[src]) return audioCache[src];
+  const res = await fetch(src);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  audioCache[src] = url;
+  return url;
+}
+
+async function preloadMode(card) {
+  // Preload remaining sounds of this mode in background after first play
+  const sounds = card.dataset.sounds.split(',');
+  for (const s of sounds) {
+    if (!audioCache[s]) fetchAndCache(s);
+  }
+}
+
 document.querySelectorAll('.feature-card[data-sounds]').forEach(card => {
-  card.addEventListener('click', () => {
+  card.addEventListener('click', async () => {
     const sounds = card.dataset.sounds.split(',');
     const src = sounds[Math.floor(Math.random() * sounds.length)];
     stopCurrent();
-    currentAudio = new Audio(src);
     currentCard = card;
     card.classList.add('playing');
-    card.querySelector('.feature-play').innerHTML = '&#9724; playing...';
-    currentAudio.play();
-    currentAudio.onended = () => stopCurrent();
+    card.querySelector('.feature-play').innerHTML = '&#8987; loading...';
+    try {
+      const url = await fetchAndCache(src);
+      currentAudio = new Audio(url);
+      card.querySelector('.feature-play').innerHTML = '&#9724; playing...';
+      currentAudio.play();
+      currentAudio.onended = () => stopCurrent();
+      // Preload rest of this mode in background
+      preloadMode(card);
+    } catch(e) {
+      card.querySelector('.feature-play').innerHTML = '&#9888; error';
+      setTimeout(() => stopCurrent(), 1500);
+    }
   });
 });
 
